@@ -14,21 +14,22 @@ module API
           use :orders_param
         end
         get '/orders' do
-          member   = Member.find_by!(uid: params[:uid]) if params[:uid].present?
-          member   = Member.find_by!(email: params[:email]) if params[:email].present?
+          ransack_params = {
+            price_eq: params[:price].present? ? params[:price] : nil,
+            origin_volume_eq: params[:origin_volume].present? ? params[:origin_volume] : nil,
+            ord_type_eq: params[:ord_type].present? ? params[:ord_type] : nil,
+            state_eq: params[:state].present? ? params[:state] : nil,
+            market_id_eq: params[:market].present? ? params[:market] : nil,
+            type_eq: params[:type].present? ? params[:type] == 'buy' ? 'OrderBid' : 'OrderAsk' : nil,
+            member_uid_eq: params[:uid].present? ? params[:uid] : nil,
+            member_email_eq: params[:email].present? ? params[:email] : nil
+          }
 
-          Order.all.order(updated_at: params[:order_by])
-               .includes(:member)
-               .tap { |q| q.where!(member: member) if member }
-               .tap { |q| q.where!(market: params[:market]) if params[:market] }
-               .tap { |q| q.where!(state: params[:state]) if params[:state] }
-               .tap { |q| q.where!(ord_type: params[:ord_type]) if params[:ord_type] }
-               .tap { |q| q.where!(price: params[:price]) if params[:price] }
-               .tap { |q| q.where!(origin_volume: params[:origin_volume]) if params[:origin_volume] }
-               .tap { |q| q.where!(type: (params[:type] == 'buy' ? 'OrderBid' : 'OrderAsk')) if params[:type] }
-               .tap { |q| q.where!('created_at >= ?', Time.at(params[:time_from])) if params[:time_from] }
-               .tap { |q| q.where!('created_at < ?', Time.at(params[:time_to])) if params[:time_to] }
-               .tap { |q| present paginate(q), with: API::V2::Admin::Entities::Order }
+          collection = Order.ransack(ransack_params).result
+          present paginate(collection), with: API::V2::Admin::Entities::Order
+          #      .tap { |q| q.where!('created_at >= ?', Time.at(params[:time_from])) if params[:time_from] }
+          #      .tap { |q| q.where!('created_at < ?', Time.at(params[:time_to])) if params[:time_to] }
+          #  .tap { |q| present paginate(q), with: API::V2::Admin::Entities::Order }
         end
       end
     end

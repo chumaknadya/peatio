@@ -32,6 +32,9 @@ class Order < ApplicationRecord
   scope :done, -> { with_state(:done) }
   scope :active, -> { with_state(:wait) }
 
+  scope :member_uid_eq, lambda { |uid| where(member_id: Member.find_by(uid: uid)) }
+  scope :member_email_eq, lambda { |email| where(member_id: Member.find_by(email: email)) }
+
   before_validation(on: :create) { self.fee = config.public_send("#{kind}_fee") }
 
   after_commit on: :create do

@@ -9,8 +9,6 @@ module API
         before { trading_must_be_permitted! }
 
         mount Admin::Orders
-        mount Admin::Withdraws
-
       end
     end
   end
