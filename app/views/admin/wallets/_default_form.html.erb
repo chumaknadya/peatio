@@ -4,4 +4,14 @@
 
   <label>Secret</label>
   <%= f.password_field :secret, class: 'form-control mb-3', value: wallet.secret || '' %>
+
+  <label>Bitgo Testnet?</label>
+  <%= f.check_box :bitgo_test_net %>
+  <div></div>
+
+  <label>Bitgo Access Token</label>
+  <%= f.password_field :bitgo_access_token, class: 'form-control mb-3', value: wallet.bitgo_access_token || '' %>
+
+  <label>Bitgo Wallet Id</label>
+  <%= f.text_field :bitgo_wallet_id, class: 'form-control mb-3', value: wallet.bitgo_wallet_id || '' %>
 <% end %>

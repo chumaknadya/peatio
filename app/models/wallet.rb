@@ -16,7 +16,7 @@ class Wallet < ApplicationRecord
   enumerize :kind, in: ENUMERIZED_KINDS, scope: true
 
   # Remove after admin panel deletion.
-  SETTING_ATTRIBUTES = %i[ uri secret ].freeze
+  SETTING_ATTRIBUTES = %i[ uri secret bitgo_test_net bitgo_access_token bitgo_wallet_id ].freeze
 
   SETTING_ATTRIBUTES.each do |attribute|
     define_method attribute do

@@ -65,6 +65,9 @@ module Admin
         gateway
         uri
         secret
+        bitgo_test_net
+        bitgo_access_token
+        bitgo_wallet_id
       ]
     end
   end
