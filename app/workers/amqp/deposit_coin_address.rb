@@ -24,7 +24,7 @@ module Workers
 
         acc.payment_address.tap do |pa|
           pa.with_lock do
-            next if pa.address.present?
+            next if pa.address.present? || pa.details['address_id'].present?
 
             # Supply address ID in case of BitGo address generation if it exists.
             result = wallet_service.create_address!(acc, pa.details)

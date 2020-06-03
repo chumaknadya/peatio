@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 describe API::V2::Public::Webhooks, type: :request do
-  describe 'GET /trading_fees' do
+  describe 'GET /webhooks/:event' do
 
     let(:member) { create(:member) }
 
@@ -136,6 +136,42 @@ describe API::V2::Public::Webhooks, type: :request do
         api_post '/api/v2/public/webhooks/deposit', params: request_body
         expect(response.status).to eq 422
         expect(response).to include_api_error('public.webhook.cannot_perfom_transfer')
+      end
+    end
+
+    context 'address confirmation event' do
+      let(:request_body) {
+        { 'event' => 'deposit',
+          'address' => '0xa049b0202ba078caa723c6b59594247b0c9f33e24878950f8537cedff9ea20ac',
+          'type' => 'address_confirmation',
+          'walletId' => '5e4e824894d4902c060f20c28b161fa8',
+          'hash' => '0xa049b0202ba078caa723c6b59594247b0c9f33e24878950f8537cedff9ea20ac',
+        }
+      }
+
+      context 'valid webhook callback' do
+        before do
+          member.get_account(:eth).payment_addresses.create(currency_id: :eth, address: nil, details: { address_id: 'address_id' })
+          WalletService.any_instance.stubs(:trigger_webhook_event).with(request_body).raises(Peatio::Wallet::ClientError.new({ address_id: ['address_id'] }))
+        end
+
+        it do
+          api_post '/api/v2/public/webhooks/deposit', params: request_body
+          expect(response.status).to eq 200
+        end
+      end
+
+      context 'adapter raises error invalid' do
+        before do
+          member.get_account(:eth).payment_addresses.create(currency_id: :eth, address: nil, details: { address_id: 'address_id' })
+          WalletService.any_instance.stubs(:trigger_webhook_event).with(request_body).raises(Peatio::Wallet::ClientError.new('something went wrong'))
+        end
+
+        it 'returns error' do
+          api_post '/api/v2/public/webhooks/deposit', params: request_body
+          expect(response.status).to eq 422
+          expect(response).to include_api_error('public.webhook.cannot_perfom_transfer')
+        end
       end
     end
   end

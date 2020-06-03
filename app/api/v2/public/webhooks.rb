@@ -6,7 +6,7 @@ module API
       class Webhooks < Grape::API
         helpers ::API::V2::WebhooksHelpers
 
-        desc 'Bitgo Transfer Webhook'
+        desc 'Bitgo Webhook'
         params do
           requires :event,
                    type: String,
@@ -29,8 +29,20 @@ module API
                      type: String,
                      desc: 'Wallet id.'
           end
+          given type: ->(val) { val == 'address_confirmation' } do
+            requires :hash,
+                     type: String,
+                     desc: 'Address txid.'
+            requires :address,
+                     type: String,
+                     desc: 'User Address.'
+            requires :walletId,
+                     type: String,
+                     desc: 'Wallet id.'
+          end
         end
         post '/webhooks/:event' do
+          Rails.logger.info { "Starting " }
           proces_webhook_event(params)
           status 200
         rescue StandardError => e
